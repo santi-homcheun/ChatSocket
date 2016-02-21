@@ -5,31 +5,47 @@
  */
 package com.cpe12ru.appchatsocket;
 
-import static com.cpe12ru.appchatsocket.Server.str1;
-import static com.cpe12ru.appchatsocket.Server.str2;
+import com.sun.org.apache.bcel.internal.generic.F2D;
+import java.awt.image.BufferedImage;
+import java.io.BufferedOutputStream;
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
+import javax.swing.JFileChooser;
+import javax.swing.UIManager;
 
 /**
  *
- * @author PC-BANK
+ * @author ram
  */
 public class Client extends javax.swing.JFrame {
 
     /**
      * Creates new form Client
      */
-    
     static Socket clientSocket;
     static DataInputStream stream_in;
     static DataOutputStream stream_out;
     static BufferedReader bufferReader;
     static String str1 = "", str2 = "";
-    
+    static JFileChooser chooser;
+    static String chooserTitle;
+    static File file;
+
     public Client() {
         initComponents();
     }
@@ -43,13 +59,30 @@ public class Client extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jScrollPane1 = new javax.swing.JScrollPane();
+        displayMsg = new javax.swing.JTextArea();
+        browseButton = new javax.swing.JButton();
         sendButton = new javax.swing.JButton();
         inputMsg = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        displayMsg = new javax.swing.JTextArea();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        displayMsg.setColumns(20);
+        displayMsg.setRows(5);
+        displayMsg.addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentMoved(java.awt.event.ComponentEvent evt) {
+                displayMsgComponentMoved(evt);
+            }
+        });
+        jScrollPane1.setViewportView(displayMsg);
+
+        browseButton.setText("Browse");
+        browseButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                browseButtonActionPerformed(evt);
+            }
+        });
 
         sendButton.setText("Send");
         sendButton.addActionListener(new java.awt.event.ActionListener() {
@@ -60,25 +93,26 @@ public class Client extends javax.swing.JFrame {
 
         jLabel1.setText("Client");
 
-        displayMsg.setColumns(20);
-        displayMsg.setRows(5);
-        jScrollPane1.setViewportView(displayMsg);
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap(29, Short.MAX_VALUE)
+                .addGap(22, 22, 22)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel1)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                        .addGroup(layout.createSequentialGroup()
-                            .addComponent(inputMsg)
-                            .addGap(18, 18, 18)
-                            .addComponent(sendButton, javax.swing.GroupLayout.PREFERRED_SIZE, 66, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 341, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(30, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(inputMsg)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(sendButton)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(browseButton))
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 404, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addContainerGap(22, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -86,27 +120,63 @@ public class Client extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 202, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 208, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(inputMsg, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(sendButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(inputMsg))
-                .addContainerGap(28, Short.MAX_VALUE))
+                    .addComponent(browseButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(23, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void displayMsgComponentMoved(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_displayMsgComponentMoved
+        // TODO add your handling code here:
+    }//GEN-LAST:event_displayMsgComponentMoved
+
+    private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
+        // TODO add your handling code here:
+        chooser = new JFileChooser();
+        chooser.setCurrentDirectory(new java.io.File("/Users/ram/Desktop/client/"));
+        chooser.setDialogTitle(chooserTitle);
+        chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+
+        if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            System.out.println("getCurrentDirctory() :"
+                    + chooser.getCurrentDirectory());
+            System.out.println("getSelectedFile() : "
+                    + chooser.getSelectedFile());
+
+            inputMsg.setText(chooser.getSelectedFile().toString());
+            file = chooser.getSelectedFile();
+
+            try {
+                stream_out.writeBytes(file.toString() + "\n");
+            } catch (IOException ex) {
+                System.out.println("IOException : " + ex);
+            }
+
+            System.out.println("Debug select file : " + file);
+
+        } else {
+            System.out.println("No Selection ");
+        }
+
+    }//GEN-LAST:event_browseButtonActionPerformed
+
     private void sendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendButtonActionPerformed
         // TODO add your handling code here:
-                
+
         try {
             str1 = inputMsg.getText().trim();
             stream_out.writeUTF(str1);
-            displayMsg.setText(displayMsg.getText().trim()+"\nClient : "+str1);
+            displayMsg.setText(displayMsg.getText().trim() + "\nClient : " + str1);
             inputMsg.setText("");
         } catch (Exception e) {
         }
+
     }//GEN-LAST:event_sendButtonActionPerformed
 
     /**
@@ -142,27 +212,44 @@ public class Client extends javax.swing.JFrame {
                 new Client().setVisible(true);
             }
         });
-        
-        clientSocket = new Socket("127.0.0.1", 9090);
+
+        try {
+            clientSocket = new Socket("127.0.0.1", 9090);
+            System.out.println("Conneting....");
+        } catch (IOException e) {
+            System.out.println("IO Exception : " + e);
+            clientSocket.close();
+            System.exit(0);
+        }
+
         stream_in = new DataInputStream(clientSocket.getInputStream());
         stream_out = new DataOutputStream(clientSocket.getOutputStream());
-        bufferReader = new BufferedReader(new InputStreamReader(System.in));
-        
+
         try {
-            while (!str2.equals("stop")) {
+            while (true) {
                 str2 = stream_in.readUTF();
-                displayMsg.setText(displayMsg.getText().trim()+"\nServer says : "+str2);
+                displayMsg.setText(displayMsg.getText().trim() + "\nServer says : " + str2);
+
             }
-                
-        } catch (Exception e) {
+
+        } catch (IOException e) {
+            clientSocket.close();
+            System.exit(0);
+            System.out.println("IO Exception : " + e);
+        } finally {
+            clientSocket.close();
+            System.exit(0);
         }
     }
 
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private static javax.swing.JButton browseButton;
     private static javax.swing.JTextArea displayMsg;
     private static javax.swing.JTextField inputMsg;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
     private static javax.swing.JButton sendButton;
     // End of variables declaration//GEN-END:variables
+
 }

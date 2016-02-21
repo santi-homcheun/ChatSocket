@@ -5,13 +5,14 @@
  */
 package com.cpe12ru.appchatsocket;
 
-import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
+import javax.swing.JFileChooser;
 
 /**
  *
@@ -22,13 +23,16 @@ public class Server extends javax.swing.JFrame {
     /**
      * Creates new form Server
      */
+    
     static ServerSocket welcomeSocket;
     static Socket connectionSocket;
-    static BufferedReader bufferReader;
+    static DataInputStream stream_in;
     static DataOutputStream stream_out;
-    static DataInputStream  stream_in;
-    static String str1 = "",str2 = "";
+    static JFileChooser chooser;
+    static String chooserTitle;
+    static String str1 = "", str2 = "";
     
+
     public Server() {
         initComponents();
     }
@@ -47,6 +51,7 @@ public class Server extends javax.swing.JFrame {
         sendButton = new javax.swing.JButton();
         inputMsg = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
+        sendButton1 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -68,21 +73,33 @@ public class Server extends javax.swing.JFrame {
 
         jLabel1.setText("Server");
 
+        sendButton1.setText("Browse");
+        sendButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sendButton1ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap(29, Short.MAX_VALUE)
+                .addGap(22, 22, 22)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel1)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                        .addGroup(layout.createSequentialGroup()
-                            .addComponent(inputMsg)
-                            .addGap(18, 18, 18)
-                            .addComponent(sendButton, javax.swing.GroupLayout.PREFERRED_SIZE, 66, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 341, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(30, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(inputMsg)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(sendButton)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(sendButton1))
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 404, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addContainerGap(25, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -90,12 +107,13 @@ public class Server extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 202, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 208, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(inputMsg, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(sendButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(inputMsg))
-                .addContainerGap(28, Short.MAX_VALUE))
+                    .addComponent(sendButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(22, Short.MAX_VALUE))
         );
 
         pack();
@@ -107,19 +125,39 @@ public class Server extends javax.swing.JFrame {
 
     private void sendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendButtonActionPerformed
         // TODO add your handling code here:
-        
         try {
-                str2 = inputMsg.getText().trim();
-                stream_out.writeUTF(str2);
-                displayMsg.setText(displayMsg.getText().trim()+"\nServer : "+str2);
-                inputMsg.setText("");
-                
-                
+            str2 = inputMsg.getText().trim();
+            stream_out.writeUTF(str2);
+            displayMsg.setText(displayMsg.getText().trim() + "\nServer : " + str2);
+            inputMsg.setText("");
         } catch (Exception e) {
         }
-        
-        
+
     }//GEN-LAST:event_sendButtonActionPerformed
+
+    private void sendButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendButton1ActionPerformed
+        // TODO add your handling code here:
+
+        chooser = new JFileChooser();
+        chooser.setCurrentDirectory(new java.io.File("/Users/ram/Desktop/server/"));
+        chooser.setDialogTitle(chooserTitle);
+        chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+
+//        chooser.setAcceptAllFileFilterUsed(isActive());
+        if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            System.out.println("getCurrentDirctory() :"
+                    + chooser.getCurrentDirectory());
+            System.out.println("getSelectedFile() : "
+                    + chooser.getSelectedFile());
+
+            
+
+            inputMsg.setText(chooser.getSelectedFile().toString());
+        } else {
+            System.out.println("No Selection ");
+        }
+
+    }//GEN-LAST:event_sendButton1ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -154,46 +192,45 @@ public class Server extends javax.swing.JFrame {
                 new Server().setVisible(true);
             }
         });
-        
+
         welcomeSocket = new ServerSocket(9090);
         System.out.println("Server is waiting. . . . ");
         connectionSocket = welcomeSocket.accept();
-        
-        System.out.println("\nClient connected with IP " + 
-                    connectionSocket
-                    .getLocalAddress()
-                    .getHostAddress());
-   
-        if (connectionSocket.isConnected()) {
-            System.out.println("Clinet connected\n");
-        }
-        
-        bufferReader = new BufferedReader(new InputStreamReader(System.in));
+
+        System.out.println("\nClient connected with IP "
+                + connectionSocket
+                .getLocalAddress()
+                .getHostAddress());
+
         stream_out = new DataOutputStream(connectionSocket.getOutputStream());
         stream_in = new DataInputStream(connectionSocket.getInputStream());
-        
+
         try {
-
-            while (!str1.equals("stop")) {
+            while (true) {
                 str1 = stream_in.readUTF();
-                displayMsg.setText(displayMsg.getText().trim()+"\nClient says : "+str1);
-            
-            } 
-        } catch (IOException e) {
-            connectionSocket.close();
-            welcomeSocket.close();
-            System.out.println("IOException : "+e);
-            
-        }    
-        
-    }
+                displayMsg.setText(displayMsg.getText().trim() + "\nServer says : " + str1);
 
+            }
+
+        } catch (IOException e) {
+            welcomeSocket.close();
+            System.exit(0);
+            System.out.println("IO Exception : " + e);
+        } finally {
+            connectionSocket.close();
+            System.exit(0);
+        }
+      
+    }
     
+ 
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private static javax.swing.JTextArea displayMsg;
     private static javax.swing.JTextField inputMsg;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
     private static javax.swing.JButton sendButton;
+    private static javax.swing.JButton sendButton1;
     // End of variables declaration//GEN-END:variables
 }
