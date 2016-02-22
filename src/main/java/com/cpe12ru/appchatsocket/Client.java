@@ -119,7 +119,7 @@ public class Client extends javax.swing.JFrame {
         // TODO add your handling code here:
         JFileChooser jFileChooser = new JFileChooser();
 
-        int fileChooser = jFileChooser.showDialog(null, "Choose file");
+        int fileChooser = jFileChooser.showDialog(null, "Open");
 
         if (fileChooser == JFileChooser.APPROVE_OPTION) {
             jTextField1.setText(jFileChooser.getSelectedFile().toString());
@@ -152,9 +152,9 @@ public class Client extends javax.swing.JFrame {
         } else {
             try {
                 printWriter = new PrintWriter(clientSocket.getOutputStream(), true);
-                System.out.println("Debug PrintWriter : "+printWriter);
                 printWriter.println("Clinet says : " + messageOut);
                 Styles.setStyleMessageSend(jTextPane1, messageOut);
+                jTextField1.setText("");
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
@@ -271,10 +271,14 @@ public class Client extends javax.swing.JFrame {
             }
         } catch (Exception e) {
             e.printStackTrace();
+            clientSocket.close();
+            System.exit(0);
+         
         } finally {
             outputStream.close();
             inputStream.close();
             clientSocket.close();
+           
         }
     }
 

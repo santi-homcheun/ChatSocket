@@ -6,7 +6,6 @@
 package com.cpe12ru.appchatsocket;
 
 import java.awt.Color;
-import javax.swing.JTextArea;
 import javax.swing.JTextPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.SimpleAttributeSet;
@@ -47,8 +46,7 @@ public class Styles {
     
     public static SimpleAttributeSet setStyleMessageRecieved(JTextPane _jTextPane, String _message) throws BadLocationException{
        
-        StyledDocument document = _jTextPane.getStyledDocument();
-        System.out.println("Debug document : "+document);
+        StyledDocument document = _jTextPane.getStyledDocument(); 
         SimpleAttributeSet attributeSet = new SimpleAttributeSet();
         StyleConstants.setBackground(attributeSet, Color.GREEN);
         StyleConstants.setBold(attributeSet, true);

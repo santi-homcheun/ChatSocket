@@ -20,7 +20,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.text.BadLocationException;
 
 /**
@@ -32,8 +31,8 @@ public class Server extends javax.swing.JFrame {
     /**
      * Creates new form Server
      */
-    public static ServerSocket welcomeSocket;
-    public static Socket connectionSocket;
+    static ServerSocket welcomeSocket;
+    static Socket connectionSocket;
 
     public Server() {
         initComponents();
@@ -66,7 +65,7 @@ public class Server extends javax.swing.JFrame {
             }
         });
 
-        jLabel1.setText("Server");
+        jLabel1.setText("Server ");
 
         browseButton.setText("Browse");
         browseButton.addActionListener(new java.awt.event.ActionListener() {
@@ -101,14 +100,14 @@ public class Server extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(13, 13, 13)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 208, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(sendButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(browseButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(22, Short.MAX_VALUE))
+                .addContainerGap(15, Short.MAX_VALUE))
         );
 
         pack();
@@ -137,12 +136,13 @@ public class Server extends javax.swing.JFrame {
                 e.printStackTrace();
             } catch (BadLocationException ex) {
                 Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
-            } 
+            }
         } else {
             try {
                 printWriter = new PrintWriter(connectionSocket.getOutputStream(), true);
                 printWriter.println("Server says : " + messageOut);
                 Styles.setStyleMessageSend(jTextPane1, messageOut);
+                jTextField1.setText("");
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
@@ -195,7 +195,7 @@ public class Server extends javax.swing.JFrame {
             }
         });
 
-         try {
+        try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
             System.err.println("Look and feel not set");
@@ -203,6 +203,7 @@ public class Server extends javax.swing.JFrame {
 
         try {
             ServerSocket serverSocket = new ServerSocket(9090);
+            System.out.println("Debug : "+serverSocket.getLocalPort());
             connectionSocket = serverSocket.accept();
             Styles.setStyleMessageWelcome(jTextPane1, "Server is ready to connetions...");
             Styles.setStyleMessageWelcome(jTextPane1, "\nConnected with Client IP " + connectionSocket.getInetAddress().getHostAddress());
@@ -223,8 +224,7 @@ public class Server extends javax.swing.JFrame {
 
                     if (!messageIn.contains("fine#")) {
                         Styles.setStyleMessageRecieved(jTextPane1, messageIn);
-                    }
-                    else{
+                    } else {
                         System.out.println("Debug check file!!!");
                         String[] splitMsg = messageIn.split("#");
                         System.out.println(splitMsg[0] + " " + splitMsg[1] + " " + splitMsg[2]);
@@ -247,25 +247,23 @@ public class Server extends javax.swing.JFrame {
                             System.out.println("Download file successful");
                             Dialogs dialogs = new Dialogs();
                             int keepOrDiscard = dialogs.Dialogs(splitMsg[2], file.getAbsoluteFile().toString());
-                            System.out.println("Debug exit from dialog");
+
                             if (keepOrDiscard == 0) {
                                 JFileChooser jFileChooser = new JFileChooser();
                                 jFileChooser.setSelectedFile(file);
                                 int n = jFileChooser.showSaveDialog(jTextPane1);
                                 if (n == JFileChooser.APPROVE_OPTION) {
                                     if ((jFileChooser.getSelectedFile().toString()).equals(file.getAbsoluteFile().toString())) {
-                                    Styles.setStyleMessageRecieved(jTextPane1, "Download Completed.");
-                                    continue;
-                                } 
-                                else {
-                                    File fileDestination = new File(jFileChooser.getSelectedFile().toString());
-                                    fileManager.copyFileAndDelete(file, fileDestination);
-                                    System.out.println("Save new file successful!");
-                                    Styles.setStyleMessageRecieved(jTextPane1, "Download Completed.");
+                                        Styles.setStyleMessageRecieved(jTextPane1, "Download Completed.");
+                                        continue;
+                                    } else {
+                                        File fileDestination = new File(jFileChooser.getSelectedFile().toString());
+                                        fileManager.copyFileAndDelete(file, fileDestination);
+                                        System.out.println("Save new file successful!");
+                                        Styles.setStyleMessageRecieved(jTextPane1, "Download Completed.");
+                                    }
                                 }
-                                }
-                            } 
-                            else {
+                            } else {
                                 file.delete();
                                 dialogs.dispose();
                             }
@@ -274,9 +272,11 @@ public class Server extends javax.swing.JFrame {
                 } while (!messageIn.equals("bye"));
             } catch (Exception e) {
                 e.printStackTrace();
+
             } finally {
                 try {
                     connectionSocket.close();
+                    System.exit(0);
                 } catch (IOException ex) {
                     Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
                 }
