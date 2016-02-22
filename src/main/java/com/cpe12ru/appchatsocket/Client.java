@@ -5,15 +5,23 @@
  */
 package com.cpe12ru.appchatsocket;
 
-
+import static com.cpe12ru.appchatsocket.Server.connectionSocket;
+import java.awt.HeadlessException;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFileChooser;
-
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.text.BadLocationException;
 
 /**
  *
@@ -24,14 +32,7 @@ public class Client extends javax.swing.JFrame {
     /**
      * Creates new form Client
      */
-    static Socket clientSocket;
-    static DataInputStream stream_in;
-    static DataOutputStream stream_out;
-    static BufferedReader bufferReader;
-    static String str1 = "", str2 = "";
-    static JFileChooser chooser;
-    static String chooserTitle;
-    static File file;
+    public static Socket clientSocket;
 
     public Client() {
         initComponents();
@@ -47,22 +48,15 @@ public class Client extends javax.swing.JFrame {
     private void initComponents() {
 
         jScrollPane1 = new javax.swing.JScrollPane();
-        displayMsg = new javax.swing.JTextArea();
+        jTextPane1 = new javax.swing.JTextPane();
         browseButton = new javax.swing.JButton();
         sendButton = new javax.swing.JButton();
-        inputMsg = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
+        jTextField1 = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        displayMsg.setColumns(20);
-        displayMsg.setRows(5);
-        displayMsg.addComponentListener(new java.awt.event.ComponentAdapter() {
-            public void componentMoved(java.awt.event.ComponentEvent evt) {
-                displayMsgComponentMoved(evt);
-            }
-        });
-        jScrollPane1.setViewportView(displayMsg);
+        jScrollPane1.setViewportView(jTextPane1);
 
         browseButton.setText("Browse");
         browseButton.addActionListener(new java.awt.event.ActionListener() {
@@ -93,13 +87,13 @@ public class Client extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(inputMsg)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jTextField1)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(sendButton)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(browseButton))
                             .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 404, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addContainerGap(22, Short.MAX_VALUE))))
+                        .addContainerGap(24, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -110,60 +104,58 @@ public class Client extends javax.swing.JFrame {
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 208, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(inputMsg, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(sendButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(browseButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(browseButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(23, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void displayMsgComponentMoved(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_displayMsgComponentMoved
-        // TODO add your handling code here:
-    }//GEN-LAST:event_displayMsgComponentMoved
-
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
         // TODO add your handling code here:
-        chooser = new JFileChooser();
-        chooser.setCurrentDirectory(new java.io.File("D:\\test\\client"));
-        chooser.setDialogTitle(chooserTitle);
-        chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-
-        if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-            System.out.println("getCurrentDirctory() :"
-                    + chooser.getCurrentDirectory());
-            System.out.println("getSelectedFile() : "
-                    + chooser.getSelectedFile());
-
-            inputMsg.setText(chooser.getSelectedFile().toString());
-            file = chooser.getSelectedFile();
-
-            try {
-                stream_out.writeBytes(file.toString() + "\n");
-            } catch (IOException ex) {
-                System.out.println("IOException : " + ex);
-            }
-
-            System.out.println("Debug select file : " + file);
-
-        } else {
-            System.out.println("No Selection ");
+        JFileChooser chooser = new JFileChooser();
+        int fileChooser = chooser.showDialog(null, "Choose file");
+        if (fileChooser == JFileChooser.APPROVE_OPTION) {
+            jTextField1.setText(chooser.getSelectedFile().toString());
         }
-
     }//GEN-LAST:event_browseButtonActionPerformed
 
     private void sendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendButtonActionPerformed
         // TODO add your handling code here:
+        String messageOut = jTextField1.getText();
+        PrintWriter printWriter = null;
+        OutputStream outputStream = null;
+        File file = new File(messageOut);
 
-        try {
-            str1 = inputMsg.getText().trim();
-            stream_out.writeUTF(str1);
-            displayMsg.setText(displayMsg.getText().trim() + "\nClient : " + str1);
-            inputMsg.setText("");
-        } catch (Exception e) {
+        if (file.isFile()) {
+
+            try {
+                outputStream = connectionSocket.getOutputStream();
+                printWriter = new PrintWriter(connectionSocket.getOutputStream(), true);
+                if (file.exists()) {
+                    printWriter.println("fine#" + file.length() + "#" + file.getName());
+                    fileManager.sendFile(file, outputStream);
+                    Styles.setStyleMessageSend(jTextPane1, "upload successfully...");
+                } else {
+                    System.out.println("File does not exist !");
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (BadLocationException ex) {
+                Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+
+            try {
+                printWriter = new PrintWriter(connectionSocket.getOutputStream(), true);
+                printWriter.println("Server says :: " + messageOut);
+                Styles.setStyleMessageSend(jTextPane1, messageOut);
+            } catch (IOException | BadLocationException ex) {
+                ex.printStackTrace();
+            }
         }
-
     }//GEN-LAST:event_sendButtonActionPerformed
 
     /**
@@ -195,21 +187,102 @@ public class Client extends javax.swing.JFrame {
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 new Client().setVisible(true);
             }
         });
 
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
+            System.err.println("Look and feel not set");
+        }
         
+        InputStream inputStream = null;
+        OutputStream outputStream = null;
+        DataInputStream dataInputStream = null;
+        BufferedReader bufferedReader = null;
+        PrintWriter printWriter = null;
+        
+        try {
+
+            clientSocket = new Socket("127.0.0.1", 9090);
+            
+            while (true) {
+                inputStream = clientSocket.getInputStream();
+                outputStream = clientSocket.getOutputStream();
+                dataInputStream = new DataInputStream(clientSocket.getInputStream());
+                printWriter = new PrintWriter(clientSocket.getOutputStream(), true);
+                bufferedReader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                String messageIn = bufferedReader.readLine();
+
+                if (messageIn.contains("find#")) {
+                    String[] splitMessage = messageIn.split("#");
+                    System.out.println(splitMessage[0] + " " + splitMessage[1] + " " + splitMessage[2]);
+                    if (splitMessage[0].equals("fine")) {
+                        String path = System.getProperty("user.home") + "\\Downloads\\server\\";
+                        File dir = new File(path);
+                        if (!dir.exists()) {
+                            try {
+                                System.out.println("Creating ... directory " + path);
+                                dir.mkdir();
+                                System.out.println("The directory created");
+                            } catch (SecurityException se) {
+                                System.out.println("Security Exception occure !!!");
+                                se.printStackTrace();
+                            }
+                        }
+
+                        File file = new File(path + splitMessage[2]);
+                        fileManager.recieveFile(file, inputStream, Integer.parseInt(splitMessage[1]));
+                        System.out.println("Download file successfully");
+                        Dialogs dialogs = new Dialogs();
+                        int keepOrDiscard = dialogs.Dialogs(splitMessage[2], file.getAbsoluteFile().toString());
+
+                        if (keepOrDiscard == 0) {
+                            JFileChooser chooser = new JFileChooser();
+                            chooser.setSelectedFile(file);
+                            int n = chooser.showSaveDialog(jTextPane1);
+                            if (n == JFileChooser.APPROVE_OPTION) {
+                                if ((chooser.getSelectedFile().toString().equals(file.getAbsoluteFile().toString()))) {
+                                    Styles.setStyleMessageRecieved(jTextPane1, "Download Completed");
+                                    continue;
+                                } else {
+                                    File fileDestination = new File(chooser.getSelectedFile().toString());
+                                    fileManager.copyFileAndDelete(file, fileDestination);
+                                    System.out.println("Save new file successfully");
+                                    Styles.setStyleMessageRecieved(jTextPane1, "Download Completed.");
+                                }
+                            }
+                        } else {
+                            file.delete();
+                            dialogs.dispose();
+                        }
+                    }
+                }else{
+                    Styles.setStyleMessageRecieved(jTextPane1, messageIn);
+                }
+                
+            }
+        } catch (IOException | NumberFormatException | HeadlessException | BadLocationException e) {
+            e.printStackTrace();
+        } finally{
+            outputStream.close();
+            inputStream.close();
+            clientSocket.close();
+        }
+
     }
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private static javax.swing.JButton browseButton;
-    private static javax.swing.JTextArea displayMsg;
-    private static javax.swing.JTextField inputMsg;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
+    private static javax.swing.JTextField jTextField1;
+    private static javax.swing.JTextPane jTextPane1;
     private static javax.swing.JButton sendButton;
     // End of variables declaration//GEN-END:variables
 

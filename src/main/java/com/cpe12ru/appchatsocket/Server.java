@@ -34,8 +34,6 @@ public class Server extends javax.swing.JFrame {
      */
     public static ServerSocket welcomeSocket;
     public static Socket connectionSocket;
-    public static Thread thread1;
-    public static Thread thread2;
 
     public Server() {
         initComponents();
@@ -165,7 +163,7 @@ public class Server extends javax.swing.JFrame {
     /**
      * @param args the command line arguments
      */
-    public static void main(String args[]) {
+    public static void main(String args[]) throws IOException {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
@@ -252,7 +250,7 @@ public class Server extends javax.swing.JFrame {
                             fileManager.recieveFile(file, inputStream, Integer.parseInt(splitMessage[1]));
                             System.out.println("Download file successfully");
                             Dialogs dialogs = new Dialogs();
-                            int keepOrDiscard = dialogs.Dialogs(splitMessage[2], file.getAbsolutePath().toString());
+                            int keepOrDiscard = dialogs.Dialogs(splitMessage[2], file.getAbsoluteFile().toString());
 
                             if (keepOrDiscard == 0) {
                                 JFileChooser chooser = new JFileChooser();
@@ -281,6 +279,7 @@ public class Server extends javax.swing.JFrame {
             } finally {
                 try {
                     connectionSocket.close();
+                    System.exit(0);
                 } catch (IOException ex) {
                     Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -288,6 +287,8 @@ public class Server extends javax.swing.JFrame {
 
         } catch (IOException | BadLocationException e) {
             e.printStackTrace();
+            welcomeSocket.close();
+            System.exit(0);
         }
 
     }
