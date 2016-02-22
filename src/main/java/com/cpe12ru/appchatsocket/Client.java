@@ -163,6 +163,7 @@ public class Client extends javax.swing.JFrame {
 
     /**
      * @param args the command line arguments
+     * @throws java.io.IOException
      */
     public static void main(String args[]) throws IOException {
         /* Set the Nimbus look and feel */
