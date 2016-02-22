@@ -5,6 +5,7 @@
  */
 package com.cpe12ru.appchatsocket;
 
+import java.awt.HeadlessException;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -19,6 +20,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.text.BadLocationException;
 
 /**
@@ -37,7 +39,9 @@ public class Client extends javax.swing.JFrame {
     static OutputStream outputStream;
     static PrintWriter printWriter;
     static BufferedReader bufferedReader;
-
+    static String messageIn = "";
+    static String messageOut = "";
+    
     public Client() {
         initComponents();
     }
@@ -138,9 +142,7 @@ public class Client extends javax.swing.JFrame {
                 } else {
                     System.out.println("File does not exist!");
                 }
-            } catch (IOException ex) {
-                Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (BadLocationException ex) {
+            } catch (IOException | BadLocationException ex) {
                 Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
@@ -148,7 +150,7 @@ public class Client extends javax.swing.JFrame {
 
     private void sendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendButtonActionPerformed
         // TODO add your handling code here:
-        String messageOut = jTextField1.getText();
+        messageOut = jTextField1.getText();
 
         try {
             printWriter = new PrintWriter(clientSocket.getOutputStream(), true);
@@ -197,7 +199,7 @@ public class Client extends javax.swing.JFrame {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 
-        } catch (Exception e) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
             System.err.println("Look and feel not set");
         }
 
@@ -212,7 +214,7 @@ public class Client extends javax.swing.JFrame {
                 printWriter = new PrintWriter(clientSocket.getOutputStream(), true);
 
                 bufferedReader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-                String messageIn = bufferedReader.readLine();
+                messageIn = bufferedReader.readLine();
 
                 if (messageIn.contains("fine#")) {
                     String[] splitMsg = messageIn.split("#");
@@ -227,7 +229,6 @@ public class Client extends javax.swing.JFrame {
                                 System.out.println("The directory created");
                             } catch (SecurityException securityException) {
                                 System.out.println("SecurityException occure!!!");
-                                securityException.printStackTrace();
                             }
                         }
 
@@ -262,8 +263,7 @@ public class Client extends javax.swing.JFrame {
                     Styles.setStyleMessageRecieved(jTextPane1, messageIn);
                 }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (IOException | NumberFormatException | HeadlessException | BadLocationException e) {
             clientSocket.close();
             System.exit(0);
 

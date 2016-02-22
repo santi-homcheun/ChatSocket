@@ -126,7 +126,7 @@ public class Server extends javax.swing.JFrame {
     private void sendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendButtonActionPerformed
         // TODO add your handling code here:
 
-        String messageOut = jTextField1.getText();
+        messageOut = jTextField1.getText();
 
         try {
             printWriter = new PrintWriter(connectionSocket.getOutputStream(), true);
@@ -158,9 +158,7 @@ public class Server extends javax.swing.JFrame {
                 } else {
                     System.out.println("File does not exist!");
                 }
-            } catch (IOException ex) {
-                Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (BadLocationException ex) {
+            } catch (IOException | BadLocationException ex) {
                 Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
