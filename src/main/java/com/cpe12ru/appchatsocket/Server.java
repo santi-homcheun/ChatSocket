@@ -123,29 +123,27 @@ public class Server extends javax.swing.JFrame {
         File file = new File(messageOut);
 
         if (file.isFile()) {
-
             try {
                 outputStream = connectionSocket.getOutputStream();
                 printWriter = new PrintWriter(connectionSocket.getOutputStream(), true);
                 if (file.exists()) {
                     printWriter.println("fine#" + file.length() + "#" + file.getName());
                     fileManager.sendFile(file, outputStream);
-                    Styles.setStyleMessageSend(jTextPane1, "upload successfully...");
+                    Styles.setStyleMessageSend(jTextPane1, "upload successful...");
                 } else {
-                    System.out.println("File does not exist !");
+                    System.out.println("File does not exist!");
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (BadLocationException ex) {
                 Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            } 
         } else {
-
             try {
                 printWriter = new PrintWriter(connectionSocket.getOutputStream(), true);
-                printWriter.println("Server says :: " + messageOut);
+                printWriter.println("Server says : " + messageOut);
                 Styles.setStyleMessageSend(jTextPane1, messageOut);
-            } catch (IOException | BadLocationException ex) {
+            } catch (Exception ex) {
                 ex.printStackTrace();
             }
         }
@@ -153,10 +151,12 @@ public class Server extends javax.swing.JFrame {
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
         // TODO add your handling code here:
-        JFileChooser chooser = new JFileChooser();
-        int fileChooser = chooser.showDialog(null, "Choose file");
+        JFileChooser jFileChooser = new JFileChooser();
+
+        int fileChooser = jFileChooser.showDialog(null, "Choose file");
+
         if (fileChooser == JFileChooser.APPROVE_OPTION) {
-            jTextField1.setText(chooser.getSelectedFile().toString());
+            jTextField1.setText(jFileChooser.getSelectedFile().toString());
         }
     }//GEN-LAST:event_browseButtonActionPerformed
 
@@ -195,23 +195,18 @@ public class Server extends javax.swing.JFrame {
             }
         });
 
-        try {
+         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
+        } catch (Exception e) {
             System.err.println("Look and feel not set");
         }
 
         try {
-
             ServerSocket serverSocket = new ServerSocket(9090);
-            Styles.setStyleMessageWelcome(jTextPane1, "Server waiting....");
-
             connectionSocket = serverSocket.accept();
-            Styles.setStyleMessageWelcome(jTextPane1, "\nConnected with client ip : "
-                    + connectionSocket.getLocalAddress().getHostAddress());
-
+            Styles.setStyleMessageWelcome(jTextPane1, "Server is ready to connetions...");
+            Styles.setStyleMessageWelcome(jTextPane1, "\nConnected with Client IP " + connectionSocket.getInetAddress().getHostAddress());
             try {
-
                 DataInputStream dataInputStream = null;
                 DataOutputStream dataOutputStream = null;
                 BufferedReader bufferedReader = null;
@@ -222,52 +217,55 @@ public class Server extends javax.swing.JFrame {
                 OutputStream outputStream = null;
 
                 do {
-
                     bufferedReader = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
                     messageIn = bufferedReader.readLine();
                     inputStream = connectionSocket.getInputStream();
 
                     if (!messageIn.contains("fine#")) {
                         Styles.setStyleMessageRecieved(jTextPane1, messageIn);
-                    } else {
-                        String[] splitMessage = messageIn.split("#");
-                        System.out.println(splitMessage[0] + " " + splitMessage[1] + " " + splitMessage[2]);
-                        if (splitMessage[0].equals("fine")) {
-                            String path = System.getProperty("user.home") + "\\Downloads\\server\\";
-                            File dir = new File(path);
+                    }
+                    else{
+                        System.out.println("Debug check file!!!");
+                        String[] splitMsg = messageIn.split("#");
+                        System.out.println(splitMsg[0] + " " + splitMsg[1] + " " + splitMsg[2]);
+                        if (splitMsg[0].equals("fine")) {
+                            String downloadPath = System.getProperty("user.home") + "\\Downloads\\server\\";
+                            File dir = new File(downloadPath);
                             if (!dir.exists()) {
                                 try {
-                                    System.out.println("Creating ... directory " + path);
+                                    System.out.println("Creating... directory " + downloadPath);
                                     dir.mkdir();
                                     System.out.println("The directory created");
-                                } catch (SecurityException se) {
-                                    System.out.println("Security Exception occure !!!");
-                                    se.printStackTrace();
+                                } catch (SecurityException securityException) {
+                                    System.out.println("SecurityException occure!!!");
+                                    securityException.printStackTrace();
                                 }
                             }
 
-                            File file = new File(path + splitMessage[2]);
-                            fileManager.recieveFile(file, inputStream, Integer.parseInt(splitMessage[1]));
-                            System.out.println("Download file successfully");
+                            File file = new File(downloadPath + splitMsg[2]);
+                            fileManager.recieveFile(file, inputStream, Integer.parseInt(splitMsg[1]));
+                            System.out.println("Download file successful");
                             Dialogs dialogs = new Dialogs();
-                            int keepOrDiscard = dialogs.Dialogs(splitMessage[2], file.getAbsoluteFile().toString());
-
+                            int keepOrDiscard = dialogs.Dialogs(splitMsg[2], file.getAbsoluteFile().toString());
+                            System.out.println("Debug exit from dialog");
                             if (keepOrDiscard == 0) {
-                                JFileChooser chooser = new JFileChooser();
-                                chooser.setSelectedFile(file);
-                                int n = chooser.showSaveDialog(jTextPane1);
+                                JFileChooser jFileChooser = new JFileChooser();
+                                jFileChooser.setSelectedFile(file);
+                                int n = jFileChooser.showSaveDialog(jTextPane1);
                                 if (n == JFileChooser.APPROVE_OPTION) {
-                                    if ((chooser.getSelectedFile().toString().equals(file.getAbsoluteFile().toString()))) {
-                                        Styles.setStyleMessageRecieved(jTextPane1, "Download Completed");
-                                        continue;
-                                    } else {
-                                        File fileDestination = new File(chooser.getSelectedFile().toString());
-                                        fileManager.copyFileAndDelete(file, fileDestination);
-                                        System.out.println("Save new file successfully");
-                                        Styles.setStyleMessageRecieved(jTextPane1, "Download Completed.");
-                                    }
+                                    if ((jFileChooser.getSelectedFile().toString()).equals(file.getAbsoluteFile().toString())) {
+                                    Styles.setStyleMessageRecieved(jTextPane1, "Download Completed.");
+                                    continue;
+                                } 
+                                else {
+                                    File fileDestination = new File(jFileChooser.getSelectedFile().toString());
+                                    fileManager.copyFileAndDelete(file, fileDestination);
+                                    System.out.println("Save new file successful!");
+                                    Styles.setStyleMessageRecieved(jTextPane1, "Download Completed.");
                                 }
-                            } else {
+                                }
+                            } 
+                            else {
                                 file.delete();
                                 dialogs.dispose();
                             }
@@ -279,16 +277,13 @@ public class Server extends javax.swing.JFrame {
             } finally {
                 try {
                     connectionSocket.close();
-                    System.exit(0);
                 } catch (IOException ex) {
                     Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
 
-        } catch (IOException | BadLocationException e) {
+        } catch (Exception e) {
             e.printStackTrace();
-            welcomeSocket.close();
-            System.exit(0);
         }
 
     }

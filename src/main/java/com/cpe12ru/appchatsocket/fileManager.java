@@ -21,79 +21,76 @@ import java.io.OutputStream;
  */
 public class fileManager {
 
-    public static void sendFile(File _file, OutputStream _OutputStream) {
-
+    public static void sendFile(File file, OutputStream outputStream) {
+        
         try {
-
-            byte[] buffer = new byte[10240];
-            BufferedOutputStream bos = new BufferedOutputStream(_OutputStream, 10240);
-            FileInputStream fis = new FileInputStream(_file);
+            byte[] bytesBuffer = new byte[10240];
+            BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream, 10240);
+            FileInputStream fileInputStream = new FileInputStream(file);
             int len = 0;
-            int countByte = 0;
-            while ((len = fis.read(buffer, 0, 10240)) != -1) {
-                bos.write(buffer, 0, len);
-                bos.flush();
-                countByte += len;
-                System.out.println(len + " " + countByte);
+            int countBytes = 0;
+            while ((len = fileInputStream.read(bytesBuffer, 0, 10240)) != -1) {
+                bufferedOutputStream.write(bytesBuffer, 0, len);
+                bufferedOutputStream.flush();
+                countBytes = countBytes + len;
+                System.out.println(len + " " + countBytes);
             }
-            System.out.println("upload file " + _file.getName() + " Successful " + countByte);
-        } catch (Exception ex) {
+            System.out.println("upload file " + file.getName() + " Successfull " + countBytes);
+        } catch (Exception ee) {
+            ee.printStackTrace();
         }
     }
 
-    public static void recieveFile(File _file, InputStream _InputStream, int _fileRecieved) throws FileNotFoundException, IOException {
-
-        byte[] buffer = new byte[10240];
+    public static void recieveFile(File file, InputStream inputStream, int fileRecieved) throws FileNotFoundException, IOException {
+        byte[] byteBuff = new byte[10240];
         int len = 0;
-        int countByte = 0;
-        FileOutputStream fos = new FileOutputStream(_file);
-        BufferedInputStream bis = new BufferedInputStream(_InputStream, 10240);
-
+        int countBytes = 0;
+        FileOutputStream fileOutputStream = new FileOutputStream(file);
+        BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream, 10240);
         while (true) {
-            len = bis.read(buffer, 0, 10240);
+            len = bufferedInputStream.read(byteBuff, 0, 10240);
             System.out.println(len);
-            fos.write(buffer, 0, len);
-            fos.flush();
-            countByte += len;
-            System.out.println(countByte);
-            if (_fileRecieved == countByte) {
-                fos.close();
+            fileOutputStream.write(byteBuff, 0, len);
+            fileOutputStream.flush();
+            countBytes = countBytes + len;
+            System.out.println(countBytes);
+            if (fileRecieved == countBytes) {
+                fileOutputStream.close();
                 break;
             }
+
         }
-        System.out.println(_file.getAbsoluteFile() + " was downloaded " + countByte);
+        System.out.println(file.getAbsolutePath() + " was downloaded " + countBytes);
     }
 
-    public static String findFileName(String _path) {
+    public static String findFileName(String path) {
         String fileName = "";
-        File file = new File(_path);
+        File file = new File(path);
         fileName = (file.getName()).substring(0, (file.getName()).indexOf("."));
         return fileName;
     }
 
-    public static String findFileType(String _path) {
+    public static String findFileType(String path) {
         String fileType = "";
-        String[] seperate = _path.split("\"");
+        String[] seperate = path.split("\"");
         fileType = seperate[seperate.length - 1].substring(seperate[seperate.length - 1].indexOf(".") + 1);
         return fileType;
     }
 
-    public static void copyFileAndDelete(File _fileCopy, File _fileDestination) {
-
+    public static void copyFileAndDelete(File fileCopy, File fileDestination) {
         try {
-            InputStream is = new FileInputStream(_fileCopy);
-            OutputStream os = new FileOutputStream(_fileDestination);
-            byte[] buffer = new byte[4096];
+            InputStream in = new FileInputStream(fileCopy);
+            OutputStream out = new FileOutputStream(fileDestination);
+            byte[] buffer = new byte[4048];
             int len = 0;
-            while ((len = is.read(buffer)) > 0) {
-                os.write(buffer, 0, len);
-            }
-            is.close();
-            os.close();
-            _fileCopy.delete();
-
-        } catch (Exception e) {
+            while ((len = in.read(buffer)) > 0){
+    	    	out.write(buffer, 0, len);
+    	    }
+            in.close();
+            out.close();
+            fileCopy.delete();
+        } catch(Exception e){
             e.printStackTrace();
-        }
+        } 
     }
 }

@@ -46,12 +46,13 @@ public class Styles {
     }
     
     public static SimpleAttributeSet setStyleMessageRecieved(JTextPane _jTextPane, String _message) throws BadLocationException{
-        
+       
         StyledDocument document = _jTextPane.getStyledDocument();
+        System.out.println("Debug document : "+document);
         SimpleAttributeSet attributeSet = new SimpleAttributeSet();
         StyleConstants.setBackground(attributeSet, Color.GREEN);
         StyleConstants.setBold(attributeSet, true);
-        document.insertString(document.getLength(), "\n", attributeSet);
+        document.insertString(document.getLength(), "\n" +_message, attributeSet);
         return attributeSet;
     }
 
