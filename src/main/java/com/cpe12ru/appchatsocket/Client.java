@@ -5,28 +5,15 @@
  */
 package com.cpe12ru.appchatsocket;
 
-import com.sun.org.apache.bcel.internal.generic.F2D;
-import java.awt.image.BufferedImage;
-import java.io.BufferedOutputStream;
-import java.io.BufferedInputStream;
+
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.Socket;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.imageio.ImageIO;
-import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
-import javax.swing.UIManager;
+
 
 /**
  *
@@ -139,7 +126,7 @@ public class Client extends javax.swing.JFrame {
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
         // TODO add your handling code here:
         chooser = new JFileChooser();
-        chooser.setCurrentDirectory(new java.io.File("/Users/ram/Desktop/client/"));
+        chooser.setCurrentDirectory(new java.io.File("D:\\test\\client"));
         chooser.setDialogTitle(chooserTitle);
         chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 
@@ -213,33 +200,7 @@ public class Client extends javax.swing.JFrame {
             }
         });
 
-        try {
-            clientSocket = new Socket("127.0.0.1", 9090);
-            System.out.println("Conneting....");
-        } catch (IOException e) {
-            System.out.println("IO Exception : " + e);
-            clientSocket.close();
-            System.exit(0);
-        }
-
-        stream_in = new DataInputStream(clientSocket.getInputStream());
-        stream_out = new DataOutputStream(clientSocket.getOutputStream());
-
-        try {
-            while (true) {
-                str2 = stream_in.readUTF();
-                displayMsg.setText(displayMsg.getText().trim() + "\nServer says : " + str2);
-
-            }
-
-        } catch (IOException e) {
-            clientSocket.close();
-            System.exit(0);
-            System.out.println("IO Exception : " + e);
-        } finally {
-            clientSocket.close();
-            System.exit(0);
-        }
+        
     }
 
 
