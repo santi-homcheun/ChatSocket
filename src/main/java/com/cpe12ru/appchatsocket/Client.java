@@ -35,6 +35,8 @@ public class Client extends javax.swing.JFrame {
     static DataOutputStream dataOutputStream;
     static InputStream inputStream;
     static OutputStream outputStream;
+    static PrintWriter printWriter;
+    static BufferedReader bufferedReader;
 
     public Client() {
         initComponents();
@@ -122,42 +124,38 @@ public class Client extends javax.swing.JFrame {
         int fileChooser = jFileChooser.showDialog(null, "Open");
 
         if (fileChooser == JFileChooser.APPROVE_OPTION) {
-            jTextField1.setText(jFileChooser.getSelectedFile().toString());
-        }
-    }//GEN-LAST:event_browseButtonActionPerformed
 
-    private void sendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendButtonActionPerformed
-        // TODO add your handling code here:
-        String messageOut = jTextField1.getText();
-        PrintWriter printWriter = null;
-        OutputStream outputStream = null;
-        File file = new File(messageOut);
+            String path = jFileChooser.getSelectedFile().toString();
+            File file = new File(path);
 
-        if (file.isFile()) {
             try {
                 outputStream = clientSocket.getOutputStream();
                 printWriter = new PrintWriter(clientSocket.getOutputStream(), true);
                 if (file.exists()) {
                     printWriter.println("fine#" + file.length() + "#" + file.getName());
                     fileManager.sendFile(file, outputStream);
-                    Styles.setStyleMessageSend(jTextPane1, "upload successful...");
+                    Styles.setStyleMessageSend(jTextPane1, "upload successfully...");
                 } else {
                     System.out.println("File does not exist!");
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
+            } catch (IOException ex) {
+                Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
             } catch (BadLocationException ex) {
-                Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
             }
-        } else {
-            try {
-                printWriter = new PrintWriter(clientSocket.getOutputStream(), true);
-                printWriter.println("Clinet says : " + messageOut);
-                Styles.setStyleMessageSend(jTextPane1, messageOut);
-                jTextField1.setText("");
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
+        }
+    }//GEN-LAST:event_browseButtonActionPerformed
+
+    private void sendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendButtonActionPerformed
+        // TODO add your handling code here:
+        String messageOut = jTextField1.getText();
+
+        try {
+            printWriter = new PrintWriter(clientSocket.getOutputStream(), true);
+            printWriter.println("Server says : " + messageOut);
+            Styles.setStyleMessageSend(jTextPane1, messageOut);
+            jTextField1.setText("");
+        } catch (IOException | BadLocationException ex) {
         }
     }//GEN-LAST:event_sendButtonActionPerformed
 
@@ -206,13 +204,8 @@ public class Client extends javax.swing.JFrame {
         try {
             clientSocket = new Socket("localhost", 9090);
 
-            InputStream inputStream = null;
-            OutputStream outputStream = null;
-            DataInputStream dataInputStream = null;
-            BufferedReader bufferedReader = null;
-            PrintWriter printWriter = null;
-
             while (true) {
+
                 inputStream = clientSocket.getInputStream();
                 outputStream = clientSocket.getOutputStream();
                 dataInputStream = new DataInputStream(clientSocket.getInputStream());
@@ -242,9 +235,9 @@ public class Client extends javax.swing.JFrame {
                         fileManager.recieveFile(file, inputStream, Integer.parseInt(splitMsg[1]));
                         System.out.println("Download file successful");
                         Dialogs dialogs = new Dialogs();
-                   
+
                         int keepOrDiscard = dialogs.Dialogs(splitMsg[2], file.getAbsoluteFile().toString());
-                        System.out.println("Debug keepORdiscard : "+keepOrDiscard);
+
                         if (keepOrDiscard == 0) {
                             JFileChooser jFileChooser = new JFileChooser();
                             jFileChooser.setSelectedFile(file);
@@ -273,12 +266,12 @@ public class Client extends javax.swing.JFrame {
             e.printStackTrace();
             clientSocket.close();
             System.exit(0);
-         
+
         } finally {
             outputStream.close();
             inputStream.close();
             clientSocket.close();
-           
+
         }
     }
 

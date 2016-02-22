@@ -5,6 +5,7 @@
  */
 package com.cpe12ru.appchatsocket;
 
+import java.awt.HeadlessException;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -20,6 +21,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.text.BadLocationException;
 
 /**
@@ -33,6 +35,14 @@ public class Server extends javax.swing.JFrame {
      */
     static ServerSocket welcomeSocket;
     static Socket connectionSocket;
+    static OutputStream outputStream;
+    static PrintWriter printWriter;
+    static DataInputStream dataInputStream;
+    static DataOutputStream dataOutputStream;
+    static BufferedReader bufferedReader;
+    static String messageIn = "";
+    static String messageOut = "";
+    static InputStream inputStream;
 
     public Server() {
         initComponents();
@@ -106,8 +116,8 @@ public class Server extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(sendButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(browseButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(15, Short.MAX_VALUE))
+                    .addComponent(jTextField1))
+                .addGap(22, 22, 22))
         );
 
         pack();
@@ -117,35 +127,13 @@ public class Server extends javax.swing.JFrame {
         // TODO add your handling code here:
 
         String messageOut = jTextField1.getText();
-        PrintWriter printWriter = null;
-        OutputStream outputStream = null;
-        File file = new File(messageOut);
 
-        if (file.isFile()) {
-            try {
-                outputStream = connectionSocket.getOutputStream();
-                printWriter = new PrintWriter(connectionSocket.getOutputStream(), true);
-                if (file.exists()) {
-                    printWriter.println("fine#" + file.length() + "#" + file.getName());
-                    fileManager.sendFile(file, outputStream);
-                    Styles.setStyleMessageSend(jTextPane1, "upload successful...");
-                } else {
-                    System.out.println("File does not exist!");
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (BadLocationException ex) {
-                Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        } else {
-            try {
-                printWriter = new PrintWriter(connectionSocket.getOutputStream(), true);
-                printWriter.println("Server says : " + messageOut);
-                Styles.setStyleMessageSend(jTextPane1, messageOut);
-                jTextField1.setText("");
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
+        try {
+            printWriter = new PrintWriter(connectionSocket.getOutputStream(), true);
+            printWriter.println("Server says : " + messageOut);
+            Styles.setStyleMessageSend(jTextPane1, messageOut);
+            jTextField1.setText("");
+        } catch (IOException | BadLocationException ex) {
         }
     }//GEN-LAST:event_sendButtonActionPerformed
 
@@ -153,15 +141,34 @@ public class Server extends javax.swing.JFrame {
         // TODO add your handling code here:
         JFileChooser jFileChooser = new JFileChooser();
 
-        int fileChooser = jFileChooser.showDialog(null, "Choose file");
+        int fileChooser = jFileChooser.showDialog(null, "Open");
 
         if (fileChooser == JFileChooser.APPROVE_OPTION) {
-            jTextField1.setText(jFileChooser.getSelectedFile().toString());
+
+            String path = jFileChooser.getSelectedFile().toString();
+            File file = new File(path);
+
+            try {
+                outputStream = connectionSocket.getOutputStream();
+                printWriter = new PrintWriter(connectionSocket.getOutputStream(), true);
+                if (file.exists()) {
+                    printWriter.println("fine#" + file.length() + "#" + file.getName());
+                    fileManager.sendFile(file, outputStream);
+                    Styles.setStyleMessageSend(jTextPane1, "upload successfully...");
+                } else {
+                    System.out.println("File does not exist!");
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (BadLocationException ex) {
+                Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }//GEN-LAST:event_browseButtonActionPerformed
 
     /**
      * @param args the command line arguments
+     * @throws java.io.IOException
      */
     public static void main(String args[]) throws IOException {
         /* Set the Nimbus look and feel */
@@ -197,25 +204,17 @@ public class Server extends javax.swing.JFrame {
 
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception e) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
             System.err.println("Look and feel not set");
         }
 
         try {
-            ServerSocket serverSocket = new ServerSocket(9090);
-            System.out.println("Debug : "+serverSocket.getLocalPort());
-            connectionSocket = serverSocket.accept();
+            welcomeSocket = new ServerSocket(9090);
+            connectionSocket = welcomeSocket.accept();
             Styles.setStyleMessageWelcome(jTextPane1, "Server is ready to connetions...");
-            Styles.setStyleMessageWelcome(jTextPane1, "\nConnected with Client IP " + connectionSocket.getInetAddress().getHostAddress());
+            Styles.setStyleMessageWelcome(jTextPane1, "\nConnected with client ip " + connectionSocket.getInetAddress().getHostAddress());
+
             try {
-                DataInputStream dataInputStream = null;
-                DataOutputStream dataOutputStream = null;
-                BufferedReader bufferedReader = null;
-                PrintWriter printWriter = null;
-                String messageIn = "";
-                String messageOut = "";
-                InputStream inputStream = null;
-                OutputStream outputStream = null;
 
                 do {
                     bufferedReader = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
@@ -225,7 +224,6 @@ public class Server extends javax.swing.JFrame {
                     if (!messageIn.contains("fine#")) {
                         Styles.setStyleMessageRecieved(jTextPane1, messageIn);
                     } else {
-                        System.out.println("Debug check file!!!");
                         String[] splitMsg = messageIn.split("#");
                         System.out.println(splitMsg[0] + " " + splitMsg[1] + " " + splitMsg[2]);
                         if (splitMsg[0].equals("fine")) {
@@ -238,7 +236,6 @@ public class Server extends javax.swing.JFrame {
                                     System.out.println("The directory created");
                                 } catch (SecurityException securityException) {
                                     System.out.println("SecurityException occure!!!");
-                                    securityException.printStackTrace();
                                 }
                             }
 
@@ -270,8 +267,8 @@ public class Server extends javax.swing.JFrame {
                         }
                     }
                 } while (!messageIn.equals("bye"));
-            } catch (Exception e) {
-                e.printStackTrace();
+            } catch (IOException | BadLocationException | NumberFormatException | HeadlessException e) {
+                welcomeSocket.close();
 
             } finally {
                 try {
@@ -282,8 +279,7 @@ public class Server extends javax.swing.JFrame {
                 }
             }
 
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (IOException | BadLocationException e) {
         }
 
     }
