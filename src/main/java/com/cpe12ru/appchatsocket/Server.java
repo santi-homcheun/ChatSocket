@@ -225,7 +225,7 @@ public class Server extends javax.swing.JFrame {
                         String[] splitMsg = messageIn.split("#");
                         System.out.println(splitMsg[0] + " " + splitMsg[1] + " " + splitMsg[2]);
                         if (splitMsg[0].equals("fine")) {
-                            String downloadPath = System.getProperty("user.home") + "\\Downloads\\server\\";
+                            String downloadPath = System.getProperty("user.home") + "/Desktop/server/";
                             File dir = new File(downloadPath);
                             if (!dir.exists()) {
                                 try {

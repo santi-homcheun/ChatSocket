@@ -69,7 +69,7 @@ public class fileManager {
 
     public static String findFileType(String _path) {
         String fileType = "";
-        String[] seperate = _path.split("\"");
+        String[] seperate = _path.split("/");
         fileType = seperate[seperate.length - 1].substring(seperate[seperate.length - 1].indexOf(".") + 1);
         return fileType;
     }

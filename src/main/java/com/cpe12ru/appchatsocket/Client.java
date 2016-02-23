@@ -221,7 +221,7 @@ public class Client extends javax.swing.JFrame {
                     String[] splitMsg = messageIn.split("#");
                     System.out.println(splitMsg[0] + " " + splitMsg[1] + " " + splitMsg[2]);
                     if (splitMsg[0].equals("fine")) {
-                        String downloadPath = System.getProperty("user.home") + "\\Downloads\\client\\";
+                        String downloadPath = System.getProperty("user.home") + "/Desktop/client/";
                         File dir = new File(downloadPath);
                         if (!dir.exists()) {
                             try {
@@ -272,6 +272,7 @@ public class Client extends javax.swing.JFrame {
             outputStream.close();
             inputStream.close();
             clientSocket.close();
+            System.exit(0);
 
         }
     }
