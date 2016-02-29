@@ -152,7 +152,7 @@ public class Server extends javax.swing.JFrame {
                 outputStream = connectionSocket.getOutputStream();
                 printWriter = new PrintWriter(connectionSocket.getOutputStream(), true);
                 if (file.exists()) {
-                    printWriter.println("fine#" + file.length() + "#" + file.getName());
+                    printWriter.println("file@" + file.length() + "@" + file.getName());
                     fileManager.sendFile(file, outputStream);
                     Styles.setStyleMessageSend(jTextPane1, "upload successfully...");
                 } else {
@@ -219,13 +219,14 @@ public class Server extends javax.swing.JFrame {
                     messageIn = bufferedReader.readLine();
                     inputStream = connectionSocket.getInputStream();
 
-                    if (!messageIn.contains("fine#")) {
+                    if (!messageIn.contains("file@")) {
                         Styles.setStyleMessageRecieved(jTextPane1, messageIn);
                     } else {
-                        String[] splitMsg = messageIn.split("#");
+                        String[] splitMsg = messageIn.split("@");
                         System.out.println(splitMsg[0] + " " + splitMsg[1] + " " + splitMsg[2]);
-                        if (splitMsg[0].equals("fine")) {
-                            String downloadPath = System.getProperty("user.home") + "/Desktop/server/";
+                        if (splitMsg[0].equals("file")) {
+                            String downloadPath = System.getProperty("user.home") + "/Desktop/server/";             
+                           
                             File dir = new File(downloadPath);
                             if (!dir.exists()) {
                                 try {

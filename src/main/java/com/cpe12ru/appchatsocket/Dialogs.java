@@ -5,6 +5,7 @@
  */
 package com.cpe12ru.appchatsocket;
 
+import java.awt.Image;
 import javax.swing.ImageIcon;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
@@ -28,9 +29,10 @@ public class Dialogs extends JDialog{
                 || fileType.toLowerCase().equals("gif") 
                 || fileType.toLowerCase().equals("bmp")) {
             image = new ImageIcon(_path);
-            
+            Image img = (image.getImage()).getScaledInstance(80, 95, java.awt.Image.SCALE_SMOOTH);
+            image = new ImageIcon(img);
             chk = JOptionPane.showOptionDialog(null,
-                    "Server is trying to transfer file : \"" 
+                    "Trying to transfer file : \"" 
                             + _fileName + "\" to you.\nDo you want to save or discard it?",
                     "Save or Discard",
                     JOptionPane.YES_NO_OPTION,
@@ -40,11 +42,8 @@ public class Dialogs extends JDialog{
                     options[0]);
         } 
         else {
-//            image = new ImageIcon(getClass().getClassLoader().getResource("resources/file-icon.png"));
-//            Image img = (image.getImage()).getScaledInstance(80, 95, java.awt.Image.SCALE_SMOOTH);
-//            image = new ImageIcon(img);
             chk = JOptionPane.showOptionDialog(null,
-                    "Server is trying to transfer file : \"" 
+                    "Trying to transfer file : \"" 
                             + _fileName + "\" to you.\nDo you want to save or discard it?",
                     "Save or Discard",
                     JOptionPane.YES_NO_OPTION,
